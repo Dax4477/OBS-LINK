@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Manager</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Import the Inter font for a clean, modern look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light theme default */
+        }
+        /* Dark mode styles using Tailwind's 'dark' variant */
+        .dark body {
+            background-color: #1f2937;
+        }
+        .dark .container, .dark .link-card, .dark .form-container {
+            background-color: #374151;
+        }
+        .dark h1, .dark h2, .dark .text-gray-800 {
+            color: #f9fafb;
+        }
+        .dark .text-gray-600, .dark .text-gray-400 {
+            color: #d1d5db;
+        }
+        .dark .link-card-link, .dark .link-card-link h3 {
+            color: #e5e7eb;
+        }
+        .dark .link-card-link p {
+            color: #9ca3af;
+        }
+        /* Custom animations for a more dynamic feel */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+        .animate-fadeOut {
+            animation: fadeOut 0.5s ease-out;
+            animation-fill-mode: forwards;
+        }
+    </style>
+</head>
+<body class="transition-colors duration-300">
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 md:p-8 rounded-xl shadow-lg w-full max-w-2xl bg-white transition-colors duration-300 my-8">
+        
+        <!-- Header -->
+        <div class="flex flex-col items-center justify-between mb-8">
+            <!-- Logo from user's provided GitHub link -->
+            <img src="https://raw.githubusercontent.com/Dax4477/obsera-assets/main/Gemini_Generated_Image_jejmw3jejmw3jejm.png" 
+                 alt="App Logo"
+                 onerror="this.src='https://placehold.co/100x100/1F2937/FFFFFF?text=Logo';"
+                 class="w-24 h-24 mb-4 rounded-lg">
+            
+            <h1 class="text-4xl font-bold text-center text-gray-800 mb-2">My Links</h1>
+            <p class="text-center text-gray-600 mb-4">
+                Add, edit, and search your favorite links.
+            </p>
+            
+            <!-- Dark Mode Toggle Button -->
+            <button id="theme-toggle" class="p-2 rounded-full text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-300">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Search and Sort Bar -->
+        <div class="mb-6 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <input type="text" id="search-input" placeholder="Search links by title or URL..."
+                   class="w-full sm:flex-grow px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-50 transition-colors duration-300">
+            <div class="flex-shrink-0 flex space-x-2">
+                <button id="sort-title" class="px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300 dark:bg-gray-600 dark:text-gray-50 dark:hover:bg-gray-500">
+                    Sort by Title
+                </button>
+                <button id="sort-date" class="px-4 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300">
+                    Sort by Date
+                </button>
+            </div>
+        </div>
+
+        <!-- Add/Edit Link Form -->
+        <div class="bg-blue-50 form-container p-6 rounded-xl mb-6 dark:bg-gray-800 transition-colors duration-300">
+            <h2 id="form-title" class="text-xl font-semibold text-blue-800 mb-4 dark:text-blue-300">Add a New Link</h2>
+            <form id="link-form" class="space-y-4">
+                <div>
+                    <label for="link-title" class="block text-sm font-medium text-gray-700 dark:text-gray-400">Link Title</label>
+                    <input type="text" id="link-title" placeholder="e.g. My Portfolio" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-50 transition-colors duration-300">
+                </div>
+                <div>
+                    <label for="link-url" class="block text-sm font-medium text-gray-700 dark:text-gray-400">Link URL</label>
+                    <input type="url" id="link-url" placeholder="e.g. https://www.example.com" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-50 transition-colors duration-300">
+                </div>
+                <button type="submit" id="submit-button"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300">
+                    Add Link
+                </button>
+            </form>
+        </div>
+
+        <!-- Links List -->
+        <div id="links-container" class="space-y-4">
+            <!-- Link cards will be injected here by JavaScript -->
+        </div>
+
+        <!-- No Links Message -->
+        <div id="no-links-message" class="text-center text-gray-400 py-8" style="display: none;">
+            <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.142a4 4 0 005.656 0l4-4a4 4 0 10-5.656-5.656l-1.102 1.101" />
+            </svg>
+            <p class="mt-2 text-sm">No links found. Add one above to get started!</p>
+        </div>
+
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl w-full max-w-sm transition-colors duration-300">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-50 mb-4">Confirm Deletion</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">Are you sure you want to delete this link?</p>
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-delete" class="px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-600 dark:text-gray-50 dark:hover:bg-gray-500">
+                    Cancel
+                </button>
+                <button id="confirm-delete" class="px-4 py-2 text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Toast -->
+    <div id="notification-toast" class="fixed bottom-6 right-6 z-50 transition-all duration-300 transform translate-y-full opacity-0">
+        <div class="bg-gray-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center space-x-2">
+            <svg class="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+            <p id="notification-message" class="text-sm font-medium">Link copied to clipboard!</p>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const form = document.getElementById('link-form');
+        const linksContainer = document.getElementById('links-container');
+        const noLinksMessage = document.getElementById('no-links-message');
+        const titleInput = document.getElementById('link-title');
+        const urlInput = document.getElementById('link-url');
+        const formTitle = document.getElementById('form-title');
+        const submitButton = document.getElementById('submit-button');
+        const searchInput = document.getElementById('search-input');
+        const themeToggle = document.getElementById('theme-toggle');
+        const sortTitleBtn = document.getElementById('sort-title');
+        const sortDateBtn = document.getElementById('sort-date');
+        const confirmModal = document.getElementById('confirm-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete');
+        const cancelDeleteBtn = document.getElementById('cancel-delete');
+        const notificationToast = document.getElementById('notification-toast');
+        const notificationMessage = document.getElementById('notification-message');
+
+        // State variables
+        let isEditing = false;
+        let editingLinkId = null;
+        let linkToDeleteId = null;
+
+        /**
+         * Loads links from local storage and renders them to the page.
+         * @param {Array} [linksToRender] Optional array of links to render (e.g., from a search).
+         */
+        function renderLinks(linksToRender) {
+            // Get links from local storage or use the provided array
+            const links = linksToRender || JSON.parse(localStorage.getItem('links')) || [];
+            
+            linksContainer.innerHTML = ''; // Clear existing links
+            
+            if (links.length === 0) {
+                // If the links array is empty, show the 'no links' message
+                noLinksMessage.style.display = 'block';
+            } else {
+                noLinksMessage.style.display = 'none'; // Otherwise, hide it
+                // Loop through the links and create HTML for each one
+                links.forEach(link => {
+                    const card = createLinkCard(link.id, link.title, link.url);
+                    card.classList.add('animate-fadeIn'); // Add animation class
+                    linksContainer.appendChild(card);
+                });
+            }
+        }
+
+        /**
+         * Saves the links array to local storage and re-renders the list.
+         * @param {Array} links The array of link objects to save.
+         */
+        function saveLinks(links) {
+            localStorage.setItem('links', JSON.stringify(links));
+            renderLinks();
+        }
+
+        /**
+         * Creates a new link card element with edit and delete buttons.
+         * @param {number} id - The unique ID of the link.
+         * @param {string} title - The title of the link.
+         * @param {string} url - The URL of the link.
+         * @returns {HTMLElement} The created link card div.
+         */
+        function createLinkCard(id, title, url) {
+            const card = document.createElement('div');
+            card.className = 'link-card bg-gray-50 p-4 rounded-xl flex items-center justify-between transition-colors duration-300 dark:bg-gray-700';
+            card.innerHTML = `
+                <a href="${url}" target="_blank" class="link-card-link flex-grow flex items-center space-x-4 cursor-pointer focus:outline-none rounded-lg p-2 -m-2 text-gray-800 dark:text-gray-50">
+                    <!-- Favicon from Google's service -->
+                    <img src="https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32" 
+                         alt="favicon" 
+                         onerror="this.style.display='none';"
+                         class="w-8 h-8 rounded-full">
+                    <div class="flex-grow min-w-0">
+                        <h3 class="text-lg font-semibold truncate break-all">${title}</h3>
+                        <p class="text-gray-500 text-sm truncate break-all dark:text-gray-400">${url}</p>
+                    </div>
+                </a>
+                <!-- Action Buttons -->
+                <div class="flex space-x-2">
+                    <!-- Copy Button -->
+                    <button class="text-gray-500 hover:text-gray-700 p-2 rounded-full transition-colors" data-id="${id}" data-action="copy">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </button>
+                    <!-- Edit Button -->
+                    <button class="text-blue-500 hover:text-blue-700 p-2 rounded-full transition-colors" data-id="${id}" data-action="edit">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L15.232 5.232z"></path></svg>
+                    </button>
+                    <!-- Delete Button -->
+                    <button class="text-red-500 hover:text-red-700 p-2 rounded-full transition-colors" data-id="${id}" data-action="delete">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            `;
+            // Add click listeners for the new buttons
+            card.querySelector('[data-action="copy"]').addEventListener('click', handleCopy);
+            card.querySelector('[data-action="edit"]').addEventListener('click', handleEdit);
+            card.querySelector('[data-action="delete"]').addEventListener('click', handleDelete);
+            return card;
+        }
+
+        /**
+         * Event handler for adding or updating a link.
+         * Determines if it's an 'add' or 'edit' based on the state variables.
+         */
+        function handleSubmit(e) {
+            e.preventDefault();
+            
+            const links = JSON.parse(localStorage.getItem('links')) || [];
+            
+            if (isEditing) {
+                // If in editing mode, find and update the existing link
+                const linkToUpdate = links.find(link => link.id === editingLinkId);
+                if (linkToUpdate) {
+                    linkToUpdate.title = titleInput.value;
+                    linkToUpdate.url = urlInput.value;
+                    saveLinks(links);
+                }
+                // Reset form and state after editing
+                isEditing = false;
+                editingLinkId = null;
+                formTitle.textContent = 'Add a New Link';
+                submitButton.textContent = 'Add Link';
+            } else {
+                // If in adding mode, create a new link object
+                const newLink = {
+                    id: Date.now(), // Simple unique ID
+                    title: titleInput.value,
+                    url: urlInput.value
+                };
+                links.unshift(newLink); // Add to the beginning of the array
+                saveLinks(links);
+            }
+
+            // Clear the form inputs
+            titleInput.value = '';
+            urlInput.value = '';
+        }
+
+        /**
+         * Event handler for the delete button. Shows the confirmation modal.
+         */
+        function handleDelete(e) {
+            linkToDeleteId = parseInt(e.currentTarget.getAttribute('data-id'));
+            confirmModal.classList.remove('hidden');
+        }
+
+        /**
+         * Event handler for the edit button.
+         * Populates the form with the selected link's data and changes the form's state.
+         */
+        function handleEdit(e) {
+            const idToEdit = parseInt(e.currentTarget.getAttribute('data-id'));
+            const links = JSON.parse(localStorage.getItem('links')) || [];
+            const linkToEdit = links.find(link => link.id === idToEdit);
+
+            if (linkToEdit) {
+                // Set the form inputs and state
+                titleInput.value = linkToEdit.title;
+                urlInput.value = linkToEdit.url;
+                isEditing = true;
+                editingLinkId = idToEdit;
+                formTitle.textContent = 'Edit Link';
+                submitButton.textContent = 'Save Changes';
+            }
+        }
+
+        /**
+         * Event handler for the copy button.
+         */
+        function handleCopy(e) {
+            const idToCopy = parseInt(e.currentTarget.getAttribute('data-id'));
+            const links = JSON.parse(localStorage.getItem('links')) || [];
+            const linkToCopy = links.find(link => link.id === idToCopy);
+            
+            if (linkToCopy) {
+                const url = linkToCopy.url;
+                // Use the older `document.execCommand` for compatibility with iframes
+                const el = document.createElement('textarea');
+                el.value = url;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+
+                // Show the notification
+                showNotification("Link copied to clipboard!");
+            }
+        }
+
+        /**
+         * Event handler for the search input.
+         * Filters the links and re-renders the list with the search results.
+         */
+        function handleSearch() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const links = JSON.parse(localStorage.getItem('links')) || [];
+            
+            // Filter the links based on the search term
+            const filteredLinks = links.filter(link => 
+                link.title.toLowerCase().includes(searchTerm) || 
+                link.url.toLowerCase().includes(searchTerm)
+            );
+            
+            // Render the filtered list
+            renderLinks(filteredLinks);
+        }
+
+        /**
+         * Event handler for toggling the color theme (dark/light mode).
+         */
+        function handleThemeToggle() {
+            // Get the root element
+            const htmlElement = document.documentElement;
+            // Toggle the 'dark' class
+            htmlElement.classList.toggle('dark');
+        }
+
+        /**
+         * Sorts the links by title.
+         */
+        function handleSortByTitle() {
+            const links = JSON.parse(localStorage.getItem('links')) || [];
+            links.sort((a, b) => a.title.localeCompare(b.title));
+            renderLinks(links);
+        }
+
+        /**
+         * Sorts the links by date added (newest first).
+         */
+        function handleSortByDate() {
+            const links = JSON.parse(localStorage.getItem('links')) || [];
+            links.sort((a, b) => b.id - a.id); // 'id' is a timestamp, so this works
+            renderLinks(links);
+        }
+
+        /**
+         * Confirms deletion and hides the modal.
+         */
+        function confirmDeletion() {
+            let links = JSON.parse(localStorage.getItem('links')) || [];
+            links = links.filter(link => link.id !== linkToDeleteId);
+            saveLinks(links);
+            hideConfirmModal();
+        }
+
+        /**
+         * Hides the confirmation modal.
+         */
+        function hideConfirmModal() {
+            confirmModal.classList.add('hidden');
+            linkToDeleteId = null;
+        }
+
+        /**
+         * Shows a notification toast with a given message.
+         * @param {string} message - The message to display.
+         */
+        function showNotification(message) {
+            notificationMessage.textContent = message;
+            notificationToast.classList.remove('opacity-0', 'translate-y-full');
+            notificationToast.classList.add('opacity-100', 'translate-y-0');
+            
+            // Automatically hide the toast after 3 seconds
+            setTimeout(() => {
+                notificationToast.classList.remove('opacity-100', 'translate-y-0');
+                notificationToast.classList.add('opacity-0', 'translate-y-full');
+            }, 3000);
+        }
+
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLinks();
+            form.addEventListener('submit', handleSubmit);
+            searchInput.addEventListener('input', handleSearch);
+            themeToggle.addEventListener('click', handleThemeToggle);
+            sortTitleBtn.addEventListener('click', handleSortByTitle);
+            sortDateBtn.addEventListener('click', handleSortByDate);
+            confirmDeleteBtn.addEventListener('click', confirmDeletion);
+            cancelDeleteBtn.addEventListener('click', hideConfirmModal);
+        });
+    </script>
+</body>
+</html>
